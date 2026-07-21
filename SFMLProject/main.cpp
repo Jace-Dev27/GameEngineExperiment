@@ -10,11 +10,18 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(SCREEN_SIZE), "SFML works!");
     sf::RectangleShape player(sf::Vector2f(10.0, 10.0));
+    sf::RectangleShape mouse(sf::Vector2f(10.0, 10.0));
+
     player.setFillColor(sf::Color::Green);
     player.setPosition({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
+    mouse.setFillColor(sf::Color::Red);
+
+    mouse.setOrigin(sf::Vector2f(mouse.getSize().x / 2.0, mouse.getSize().y / 2.0));
+
     sf::Clock clock;
     sf::Time delta_time;
     clock.start();
+    bool debug_mode = false;
 
     while (window.isOpen())
     {
@@ -22,6 +29,15 @@ int main()
         {
             if (event ->is<sf::Event::Closed>())
                 window.close();
+            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                if (keyPressed->code == sf::Keyboard::Key::F3) {
+                    debug_mode = !debug_mode;
+                }
+                if (keyPressed->code == sf::Keyboard::Key::I && debug_mode) {
+                    cout << "x: " << mouse.getPosition().x;
+                    cout << " y: " << mouse.getPosition().y << endl;
+                }
+            }
         }
         delta_time = clock.restart();
         float dt = delta_time.asSeconds();
@@ -48,6 +64,9 @@ int main()
             cout << "Moving right!" << endl;
             player.move({ PLAYER_SPEED * dt, 0.0f });
         }
+        if (debug_mode) {
+            mouse.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
+        }
 
         // FIND FIX FOR MAGIC NUMBERS
         // Adjust player origin and collision perfection
@@ -70,6 +89,7 @@ int main()
         }
 
         window.clear();
+        window.draw(mouse);
         window.draw(player);
         window.display();
     }
