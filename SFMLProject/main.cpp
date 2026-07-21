@@ -4,7 +4,7 @@
 using std::cout;
 using std::endl;
 const sf::Vector2u SCREEN_SIZE(1920, 1080);
-const float PLAYER_SPEED = 250.0f;
+const float PLAYER_SPEED = 500.0f;
 
 int main()
 {
@@ -26,6 +26,9 @@ int main()
         delta_time = clock.restart();
         float dt = delta_time.asSeconds();
 
+
+        // User Keyboard Input
+
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
                 cout << "Moving up!" << endl;
                 player.move({ 0.0f, -PLAYER_SPEED * dt});
@@ -44,6 +47,26 @@ int main()
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
             cout << "Moving right!" << endl;
             player.move({ PLAYER_SPEED * dt, 0.0f });
+        }
+
+        // FIND FIX FOR MAGIC NUMBERS
+        // Adjust player origin and collision perfection
+
+        // Player moves beyond right side of window
+        if (player.getGlobalBounds().position.x > SCREEN_SIZE.x) {
+            player.setPosition({ 0.0f, player.getPosition().y });
+        }
+        // Player moves beyond left side of window
+        if (player.getGlobalBounds().position.x < 0.0f) {
+            player.setPosition({ 1920.0f, player.getPosition().y});
+        }
+        // Player moves above the top side of window
+        if (player.getGlobalBounds().position.y < 0.0f) {
+            player.setPosition({ player.getPosition().x, 1080.0f});
+        }
+        // Player moves below the bottom side of window
+        if (player.getGlobalBounds().position.y > SCREEN_SIZE.y) {
+            player.setPosition({ player.getPosition().x, 0.0f });
         }
 
         window.clear();
