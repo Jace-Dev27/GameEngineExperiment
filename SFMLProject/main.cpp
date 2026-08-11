@@ -9,13 +9,36 @@ const float GRAVITY = 10.0f;
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(SCREEN_SIZE), "SFML works!");
+    // Base Window
+    sf::RenderWindow window(sf::VideoMode(SCREEN_SIZE), "Main");
+
+
     // sf::RectangleShape player(sf::Vector2f(10.0, 10.0));
     sf::RectangleShape mouse(sf::Vector2f(10.0, 10.0));
     sf::Texture mercy ("Assets/mercy2.png");
     sf::Texture hanzo("Assets/hanzo.png");
     sf::Sprite player(mercy);
     sf::Sprite player2(hanzo);
+
+
+    sf::Texture start_texture("Assets/button_02.png");
+    sf::Sprite start_button(start_texture);
+
+    start_button.scale({4.0f, 4.0f });
+    start_button.setOrigin({ start_texture.getSize().x / 2.0f, start_texture.getSize().y / 2.0f });
+    start_button.setPosition({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
+    
+    // Bounding Box
+
+    sf::FloatRect start_bounds(
+        sf::Vector2f(start_button.getPosition().x - 184.0f, start_button.getPosition().y - 32.0f),
+        sf::Vector2f(364.0f, 64.0f)
+    );
+
+    sf::RectangleShape bound_box (start_bounds.size);
+    bound_box.setOrigin( { bound_box.getPosition().x / 2.0f, bound_box.getPosition().y / 2.0f } );
+    bound_box.setPosition(start_bounds.position);
+    bound_box.setFillColor(sf::Color::Red);
 
 
     player.setPosition({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
@@ -32,6 +55,9 @@ int main()
     sf::Clock clock;
 
     sf::Time delta_time;
+
+    // start off in menu
+    bool menu_state = true;
 
 
     clock.start();
@@ -52,6 +78,21 @@ int main()
                     cout << " y: " << mouse.getPosition().y << endl;
                 }
             }
+        }
+        if (menu_state) {
+            sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+            if ( bound_box.getGlobalBounds().contains( {(float)mouse_pos.x, (float)mouse_pos.y }) ) {
+                cout << "Hovering on Start!";
+
+            }
+
+
+            window.clear();
+            window.draw(bound_box);
+            window.draw(start_button);
+            window.display();
+
+            continue;
         }
         delta_time = clock.restart();
         float dt = delta_time.asSeconds();
