@@ -20,13 +20,21 @@ int main()
     sf::Sprite player(mercy);
     sf::Sprite player2(hanzo);
 
-
+    // Start Button
     sf::Texture start_texture("Assets/button_02.png");
     sf::Sprite start_button(start_texture);
 
     start_button.scale({4.0f, 4.0f });
     start_button.setOrigin({ start_texture.getSize().x / 2.0f, start_texture.getSize().y / 2.0f });
-    start_button.setPosition({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
+    start_button.setPosition({ window.getSize().x / 2.0f, window.getSize().y / 3.0f });
+
+    // Settings Button
+    sf::Texture settings_texture("Assets/button_01.png");
+    sf::Sprite settings_button(settings_texture);
+
+    settings_button.scale({ 4.0f, 4.0f });
+    settings_button.setOrigin({ settings_texture.getSize().y / 2.0f, settings_texture.getSize().y / 2.0f });
+    settings_button.setPosition({start_button.getPosition().x, start_button.getPosition().y + 72.0f});
     
     // Bounding Box
 
@@ -35,11 +43,20 @@ int main()
         sf::Vector2f(364.0f, 64.0f)
     );
 
-    sf::RectangleShape bound_box (start_bounds.size);
-    bound_box.setOrigin( { bound_box.getPosition().x / 2.0f, bound_box.getPosition().y / 2.0f } );
-    bound_box.setPosition(start_bounds.position);
-    bound_box.setFillColor(sf::Color::Red);
+    sf::RectangleShape start_bound_box (start_bounds.size);
+    start_bound_box.setOrigin({ start_bound_box.getPosition().x / 2.0f, start_bound_box.getPosition().y / 2.0f });
+    start_bound_box.setPosition(start_bounds.position);
+    start_bound_box.setFillColor(sf::Color::Red);
 
+    sf::FloatRect settings_bounds(
+        sf::Vector2f(settings_button.getPosition().x - 184.0f, settings_button.getPosition().y - 32.0f),
+        sf::Vector2f(364.0f, 64.0f)
+    );
+
+    sf::RectangleShape settings_bound_box(settings_bounds.size);
+    settings_bound_box.setOrigin({ settings_bound_box.getPosition().x / 2.0f, settings_bound_box.getPosition().y / 2.0f});
+    settings_bound_box.setPosition(settings_bounds.position);
+    settings_bound_box.setFillColor(sf::Color::Red);
 
     player.setPosition({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
     player.setScale({ 0.25f, 0.25f });
@@ -79,21 +96,47 @@ int main()
                 }
             }
         }
+        
         if (menu_state) {
             sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
-            if ( bound_box.getGlobalBounds().contains( {(float)mouse_pos.x, (float)mouse_pos.y }) ) {
-                cout << "Hovering on Start!";
 
+            // Start Button
+            if ( start_bound_box.getGlobalBounds().contains( {(float)mouse_pos.x, (float)mouse_pos.y })) {
+                // Slight transparent effect
+                start_button.setColor(sf::Color(255, 255, 255, 225));
+
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+                menu_state = false;
+                }
+            } else {
+                // Original transparency
+                start_button.setColor(sf::Color(255, 255, 255, 255));
             }
 
+            // Settigns Button
+            if (settings_bound_box.getGlobalBounds().contains({ (float)mouse_pos.x, (float)mouse_pos.y })) {
+                // Slight transparent effect
+                settings_button.setColor(sf::Color(255, 255, 255, 225));
+
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+                    menu_state = false;
+                }
+            }
+            else {
+                // Original transparency
+                settings_button.setColor(sf::Color(255, 255, 255, 255));
+            }
 
             window.clear();
-            window.draw(bound_box);
+            window.draw(start_bound_box);
             window.draw(start_button);
+            window.draw(settings_bound_box);
+            window.draw(settings_button);
             window.display();
 
             continue;
         }
+        
         delta_time = clock.restart();
         float dt = delta_time.asSeconds();
 
