@@ -1,11 +1,15 @@
 ﻿#include <SFML/Graphics.hpp>
 #include <iostream>
+#include "Player.h"
+#include "Button.h"
 
 using std::cout;
 using std::endl;
 const sf::Vector2u SCREEN_SIZE(1920, 1080);
 const float PLAYER_SPEED = 500.0f;
 const float GRAVITY = 10.0f;
+const sf::Color C_SELECTED(sf::Color(255, 255, 255, 200));
+const sf::Color C_ORIGINAL(sf::Color(255, 255, 255, 255));
 
 int main()
 {
@@ -20,13 +24,9 @@ int main()
     sf::Sprite player(mercy);
     sf::Sprite player2(hanzo);
 
-    // Start Button
-    sf::Texture start_texture("Assets/button_02.png");
-    sf::Sprite start_button(start_texture);
+    Engine::Player player_obj("Assets/mercy2.png");
 
-    start_button.scale({4.0f, 4.0f });
-    start_button.setOrigin({ start_texture.getSize().x / 2.0f, start_texture.getSize().y / 2.0f });
-    start_button.setPosition({ window.getSize().x / 2.0f, window.getSize().y / 3.0f });
+    Engine::Button start_button("Assets/button_02.png", window);
 
     // Settings Button
     sf::Texture settings_texture("Assets/button_01.png");
@@ -34,19 +34,9 @@ int main()
 
     settings_button.scale({ 4.0f, 4.0f });
     settings_button.setOrigin({ settings_texture.getSize().y / 2.0f, settings_texture.getSize().y / 2.0f });
-    settings_button.setPosition({start_button.getPosition().x, start_button.getPosition().y + 72.0f});
+    //settings_button.setPosition({start_button.getPosition().x, start_button.getPosition().y + 72.0f});
     
     // Bounding Box
-
-    sf::FloatRect start_bounds(
-        sf::Vector2f(start_button.getPosition().x - 184.0f, start_button.getPosition().y - 32.0f),
-        sf::Vector2f(364.0f, 64.0f)
-    );
-
-    sf::RectangleShape start_bound_box (start_bounds.size);
-    start_bound_box.setOrigin({ start_bound_box.getPosition().x / 2.0f, start_bound_box.getPosition().y / 2.0f });
-    start_bound_box.setPosition(start_bounds.position);
-    start_bound_box.setFillColor(sf::Color::Red);
 
     sf::FloatRect settings_bounds(
         sf::Vector2f(settings_button.getPosition().x - 184.0f, settings_button.getPosition().y - 32.0f),
@@ -101,35 +91,38 @@ int main()
             sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
 
             // Start Button
-            if ( start_bound_box.getGlobalBounds().contains( {(float)mouse_pos.x, (float)mouse_pos.y })) {
+            if ( start_button.b_collisionbox_.getGlobalBounds().contains( {(float)mouse_pos.x, (float)mouse_pos.y })) {
                 // Slight transparent effect
-                start_button.setColor(sf::Color(255, 255, 255, 225));
+                start_button.b_sprite_.setColor(C_SELECTED);
 
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
                 menu_state = false;
                 }
             } else {
                 // Original transparency
-                start_button.setColor(sf::Color(255, 255, 255, 255));
+                start_button.b_sprite_.setColor(C_ORIGINAL);
             }
 
             // Settigns Button
             if (settings_bound_box.getGlobalBounds().contains({ (float)mouse_pos.x, (float)mouse_pos.y })) {
                 // Slight transparent effect
-                settings_button.setColor(sf::Color(255, 255, 255, 225));
+                settings_button.setColor(C_SELECTED);
 
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-                    menu_state = false;
+                 
                 }
             }
             else {
                 // Original transparency
-                settings_button.setColor(sf::Color(255, 255, 255, 255));
+                settings_button.setColor(C_ORIGINAL);
             }
 
             window.clear();
-            window.draw(start_bound_box);
-            window.draw(start_button);
+            //window.draw(start_bound_box);
+            //window.draw(start_button);
+            window.draw(start_button.b_collisionbox_);
+            window.draw(start_button.b_sprite_);
+
             window.draw(settings_bound_box);
             window.draw(settings_button);
             window.display();
