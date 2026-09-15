@@ -11,6 +11,17 @@ namespace Engine {
 		ButtonInit(window);
 		std::cout << "Button Created!" << std::endl;
 	}
+
+	Button::Button(sf::Texture texture, sf::RenderWindow &window) : 
+		b_texture_(texture),
+		b_sprite_(b_texture_),
+		b_sizex_(b_texture_.getSize().x),
+		b_sizey_(b_texture_.getSize().y),
+		b_selected_(false) {
+		ButtonInit(window);
+		std::cout << "Button Created!" << std::endl; 
+	}
+
 	Button::~Button() {
 		std::cout << "Button Destroyed!" << std::endl;
 	}

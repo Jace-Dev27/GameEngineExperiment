@@ -1,4 +1,5 @@
 ﻿#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include "Player.h"
 #include "Button.h"
@@ -27,6 +28,37 @@ int main()
     Engine::Player player_obj("Assets/mercy2.png");
 
     Engine::Button start_button("Assets/button_02.png", window);
+    start_button.b_collisionbox_.setFillColor(sf::Color(0, 0, 0, 0));
+
+
+    sf::Texture timer_off("Assets/HUD_TIMER_0.png");
+    sf::Texture timer_on("Assets/HUD_TIMER_1.png");
+
+    Engine::Button timer(timer_off, window);
+    sf::Font timer_font;
+    if (!timer_font.openFromFile("Assets/comicbd.ttf")) {
+        std::cerr << "Error Loading Font\n";
+        return -1;
+    }
+
+    // Timer Text
+    sf::Text timer_text(timer_font);
+    timer.b_sprite_.setPosition( {(float)(window.getSize().x - 200), 245 } );
+    timer_text.setString("0:0");
+    timer_text.setPosition({ (float)(timer.b_sprite_.getPosition().x - 10.0), (float)(timer.b_sprite_.getPosition().y - 20.0)} );
+    // Timer Button
+    timer.b_collisionbox_.setSize({ 145.0f, 40.0f });
+    timer.b_collisionbox_.setPosition({ (float)( timer.b_sprite_.getPosition().x + 30) , (float)(timer.b_sprite_.getPosition().y - 245.0) });
+    // 1800 seconds = 30 minutes
+    sf::Time timer_initial_time = sf::seconds(1800.0f);
+    sf::Clock* timer_countdown = nullptr;
+    bool timer_state = false;
+
+    sf::SoundBuffer buffer;
+    if (!buffer.loadFromFile("Assets/timer_end.wav")) {
+        return -1;
+    }
+    sf::Sound timer_endsound(buffer);
 
     // Settings Button
     sf::Texture settings_texture("Assets/button_01.png");
@@ -70,8 +102,12 @@ int main()
     clock.start();
     bool debug_mode = false;
 
+    // MAIN LOOP
     while (window.isOpen())
     {
+        sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+        float mouse_pos_x = (float)mouse_pos.x;
+        float mouse_pos_y = (float)mouse_pos.y;
         while (const std::optional event = window.pollEvent())
         {
             if (event ->is<sf::Event::Closed>())
@@ -84,19 +120,47 @@ int main()
                     cout << "x: " << mouse.getPosition().x;
                     cout << " y: " << mouse.getPosition().y << endl;
                 }
+                // Can ESC to menu
+                if (keyPressed->code == sf::Keyboard::Key::Escape && !menu_state) {
+                    std::cout << "Escape Pressed!" << std::endl;
+                    menu_state = true;
+                }
             }
-        }
+
+            // This is used for one time click, not runtime
+            if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+                if (mousePressed->button == sf::Mouse::Button::Left) {
+                    if (timer.b_collisionbox_.getGlobalBounds().contains({mouse_pos_x, mouse_pos_y})) {
+                   std::cout << "Timer Clicked" << std::endl;
+                   if (timer_state == false) {
+                       timer.b_sprite_.setTexture(timer_on);
+                       timer_state = true;
+                       // Point to a new clock on the heap
+                       timer_countdown = new sf::Clock;
+                   }
+                   else {
+                       timer.b_sprite_.setTexture(timer_off);
+                       timer_countdown = nullptr;
+                       timer_state = false;
+                   }
+
+                    }
+                }
+            }
+       }
         
         if (menu_state) {
-            sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
 
             // Start Button
-            if ( start_button.b_collisionbox_.getGlobalBounds().contains( {(float)mouse_pos.x, (float)mouse_pos.y })) {
+            if ( start_button.b_collisionbox_.getGlobalBounds().contains({mouse_pos_x, mouse_pos_y}) ) {
                 // Slight transparent effect
                 start_button.b_sprite_.setColor(C_SELECTED);
 
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
                 menu_state = false;
+                window.clear();
+                // Need To free up memory, menu screen is gone
+                continue;
                 }
             } else {
                 // Original transparency
@@ -104,7 +168,7 @@ int main()
             }
 
             // Settigns Button
-            if (settings_bound_box.getGlobalBounds().contains({ (float)mouse_pos.x, (float)mouse_pos.y })) {
+            if (settings_bound_box.getGlobalBounds().contains({mouse_pos_x,mouse_pos_y })) {
                 // Slight transparent effect
                 settings_button.setColor(C_SELECTED);
 
@@ -117,14 +181,31 @@ int main()
                 settings_button.setColor(C_ORIGINAL);
             }
 
+            if (timer_countdown != nullptr) {
+                std::string t_text = std::to_string((int)timer_countdown->getElapsedTime().asSeconds());
+                timer_text.setString(t_text);
+                if (timer_state == true && timer_countdown->getElapsedTime().asSeconds() >= 3600.0f) {
+                    std::cout << "30 Minutes Is Up" << std::endl;
+                    timer_endsound.play();
+                    timer_countdown = nullptr;
+                    timer.b_sprite_.setTexture(timer_off);
+                    timer_state = false;
+                }
+
+            }
+
+
             window.clear();
-            //window.draw(start_bound_box);
-            //window.draw(start_button);
+
             window.draw(start_button.b_collisionbox_);
             window.draw(start_button.b_sprite_);
 
             window.draw(settings_bound_box);
             window.draw(settings_button);
+
+            window.draw(timer.b_sprite_);
+            //window.draw(timer.b_collisionbox_);
+            window.draw(timer_text);
             window.display();
 
             continue;
@@ -132,7 +213,6 @@ int main()
         
         delta_time = clock.restart();
         float dt = delta_time.asSeconds();
-
 
         // User Keyboard Input 
 
