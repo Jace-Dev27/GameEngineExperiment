@@ -3,10 +3,12 @@
 #include <iostream>
 #include "Player.h"
 #include "Button.h"
+#include "TileManager.h"
+#include "TextureLoader.h"
 
 using std::cout;
 using std::endl;
-const sf::Vector2u SCREEN_SIZE(1920, 1080);
+const sf::Vector2u SCREEN_SIZE(768, 512);
 const float PLAYER_SPEED = 500.0f;
 const float GRAVITY = 10.0f;
 const sf::Color C_SELECTED(sf::Color(255, 255, 255, 200));
@@ -15,15 +17,23 @@ const sf::Color C_ORIGINAL(sf::Color(255, 255, 255, 255));
 int main()
 {
     // Base Window
-    sf::RenderWindow window(sf::VideoMode(SCREEN_SIZE), "Main");
+    sf::RenderWindow window(sf::VideoMode(SCREEN_SIZE), "Main", sf::Style::Titlebar | sf::Style::Close);
+    int map_arr[ROWS][COLS];
+    // Loads the Map Tile Set from MapData.txt
+    tilemap_load(map_arr);
+    tilemap_init(map_arr, window);
+
+    std::vector<sf::Texture> textures;
+    texture_init(textures);
+    if (textures.size() == 0) {
+        std::cout << "texture vector is empty" << std::endl;
+    }
+    sf::Sprite base_tile(textures[0]);
+    
 
 
-    // sf::RectangleShape player(sf::Vector2f(10.0, 10.0));
+
     sf::RectangleShape mouse(sf::Vector2f(10.0, 10.0));
-    sf::Texture mercy ("Assets/mercy2.png");
-    sf::Texture hanzo("Assets/hanzo.png");
-    sf::Sprite player(mercy);
-    sf::Sprite player2(hanzo);
 
     Engine::Player player_obj("Assets/mercy2.png");
 
@@ -79,13 +89,6 @@ int main()
     settings_bound_box.setOrigin({ settings_bound_box.getPosition().x / 2.0f, settings_bound_box.getPosition().y / 2.0f});
     settings_bound_box.setPosition(settings_bounds.position);
     settings_bound_box.setFillColor(sf::Color::Red);
-
-    player.setPosition({ window.getSize().x / 2.0f, window.getSize().y / 2.0f });
-    player.setScale({ 0.25f, 0.25f });
-
-
-    player2.setPosition({window.getSize().x / 2.5f, window.getSize().y / 2.5f });
-    player2.setScale({ 0.25f, 0.25f });
 
     mouse.setFillColor(sf::Color::Red);
 
@@ -206,6 +209,7 @@ int main()
             window.draw(timer.b_sprite_);
             //window.draw(timer.b_collisionbox_);
             window.draw(timer_text);
+            window.draw(base_tile);
             window.display();
 
             continue;
@@ -214,91 +218,12 @@ int main()
         delta_time = clock.restart();
         float dt = delta_time.asSeconds();
 
-        // User Keyboard Input 
-
-        // Player 1
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-                player.move({ 0.0f, -PLAYER_SPEED * dt});
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-            player.move({ -PLAYER_SPEED * dt, 0.0f });
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-            player.move({ 0.0f, PLAYER_SPEED * dt });
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-            player.move({ PLAYER_SPEED * dt, 0.0f });
-        }
         if (debug_mode) {
             mouse.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
         }
 
-        // Player 2
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
-            player2.move({ 0.0f, -PLAYER_SPEED * dt});
-
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
-            player2.move({ -PLAYER_SPEED * dt, 0.0f });
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
-            player2.move({0.0f, PLAYER_SPEED * dt});
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
-            player2.move({PLAYER_SPEED * dt, 0.0f});
-        }
-
-        // FIND FIX FOR MAGIC NUMBERS
-        // Adjust player origin and collision perfection
-
-        // Player moves beyond right side of window
-        if (player.getGlobalBounds().position.x > SCREEN_SIZE.x) {
-            player.setPosition({ 0.0f, player.getPosition().y });
-        }
-        // Player moves beyond left side of window
-        if (player.getGlobalBounds().position.x < 0.0f) {
-            player.setPosition({ 1920.0f, player.getPosition().y});
-        }
-        // Player moves above the top side of window
-        if (player.getGlobalBounds().position.y < 0.0f) {
-            player.setPosition({ player.getPosition().x, 1080.0f});
-        }
-        // Player moves below the bottom side of window
-        if (player.getGlobalBounds().position.y > SCREEN_SIZE.y) {
-            player.setPosition({ player.getPosition().x, 0.0f });
-        }
-
-
-        // Player 2 moves beyond right side of window
-        if (player2.getGlobalBounds().position.x > SCREEN_SIZE.x) {
-            player2.setPosition({ 0.0f, player2.getPosition().y });
-        }
-        // Player 2 moves beyond left side of window
-        if (player2.getGlobalBounds().position.x < 0.0f) {
-            player2.setPosition({ 1920.0f, player2.getPosition().y });
-        }
-        // Player 2 moves above the top side of window
-        if (player2.getGlobalBounds().position.y < 0.0f) {
-            player2.setPosition({ player2.getPosition().x, 1080.0f });
-        }
-        // Player 2 moves below the bottom side of window
-        if (player2.getGlobalBounds().position.y > SCREEN_SIZE.y) {
-            player2.setPosition({ player2.getPosition().x, 0.0f });
-        }
-
-        // player 1 and player 2 collide
-        if (player.getGlobalBounds().contains(player2.getGlobalBounds().position)) {
-            cout << "Players Colliding!" << endl;
-
-        }
-
         window.clear();
         window.draw(mouse);
-        window.draw(player);
-        window.draw(player2);
         window.display();
     }
 }
