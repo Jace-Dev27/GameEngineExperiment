@@ -23,12 +23,12 @@ int main()
     tilemap_load(map_arr);
     tilemap_init(map_arr, window);
 
+
     std::vector<sf::Texture> textures;
     texture_init(textures);
-    if (textures.size() == 0) {
-        std::cout << "texture vector is empty" << std::endl;
-    }
-    sf::Sprite base_tile(textures[0]);
+    // Base tile
+    sf::Sprite tile(textures[0]);
+   
     
 
 
@@ -209,7 +209,6 @@ int main()
             window.draw(timer.b_sprite_);
             //window.draw(timer.b_collisionbox_);
             window.draw(timer_text);
-            window.draw(base_tile);
             window.display();
 
             continue;
@@ -223,6 +222,7 @@ int main()
         }
 
         window.clear();
+        tile_main(tile, map_arr, textures, window);
         window.draw(mouse);
         window.display();
     }

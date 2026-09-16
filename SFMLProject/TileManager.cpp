@@ -3,8 +3,19 @@
 #include <fstream>
 #include <vector>
 
+const float TILE_SIZE = 128.0f;
 
-void tile_main() {
+
+void tile_main(sf::Sprite tile, int (&map_arr)[ROWS][COLS], std::vector<sf::Texture> textures, sf::RenderWindow &window) {
+	for (int i = 0; i < ROWS; i++) {
+		for (int j = 0; j < COLS; j++) {
+			int text_id = map_arr[i][j];
+			tile.setTexture(textures[text_id]);
+			tile.setPosition({ j * TILE_SIZE, i * TILE_SIZE });
+			window.draw(tile);
+		}
+	}
+
 
 
 

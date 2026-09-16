@@ -10,3 +10,6 @@ void texture_init(std::vector<sf::Texture> &textures);
 
 // Populates Json File With ID:TexturePath
 void populate_json();
+
+// Initializes the json file stack variable
+void init_json();
